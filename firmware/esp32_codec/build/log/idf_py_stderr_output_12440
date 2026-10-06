@@ -1,0 +1,14 @@
+Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe C:\esp\v5.5.5\esp-idf\tools/idf_monitor.py -p COM5 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 D:\projects\iot-final\firmware\esp32_codec\build\esp32_codec.elf D:\projects\iot-final\firmware\esp32_codec\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'C:\esp\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM5'
+--- WARNING: GDB cannot open serial ports accessed as COMx
+--- NOTE: Using \\.\COM5 instead...
+--- esp-idf-monitor 1.10.0 on \\.\COM5 115200
+--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+
+thread 'main' panicked at main.rs:220:10:
+Failed to start child process: Os { code: 4551, kind: Uncategorized, message: "An Application Control policy has blocked this file." }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[1;31mxtensa-esp32-elf-addr2line -fiaC -e D:\projects\iot-final\firmware\esp32_codec\build\bootloader\bootloader.elf 0x40078000: Command '['xtensa-esp32-elf-addr2line', '-fiaC', '-e', 'D:\\projects\\iot-final\\firmware\\esp32_codec\\build\\bootloader\\bootloader.elf', '0x40078000']' returned non-zero exit status 101.[0m
+[1;31mELF file is missing or has changed, the build folder was probably modified.[0m
+--- 0x40080400: _invalid_pc_placeholder at C:/esp/v5.5.5/esp-idf/components/xtensa/xtensa_vectors.S:2259
+--- 0x40080644: call_start_cpu0 at C:/esp/v5.5.5/esp-idf/components/bootloader/subproject/main/bootloader_start.c:27
+

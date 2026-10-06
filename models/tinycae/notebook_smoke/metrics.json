@@ -1,0 +1,13 @@
+{
+  "run_name": "notebook_smoke",
+  "quick_run": true,
+  "train_images": 256,
+  "validation_images": 64,
+  "psnr_db": 12.500307083129883,
+  "ssim": 0.12921224534511566,
+  "latent_shape": [
+    8,
+    8,
+    16
+  ]
+}

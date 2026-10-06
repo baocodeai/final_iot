@@ -1,0 +1,210 @@
+{
+  "dataset": "CIFAR-10 official test batch",
+  "source": "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz",
+  "archive_md5": "c58f30108f718f92721af3b95e74349a",
+  "selection_seed": 2026,
+  "selection_rule": "2 images per class, sampled without replacement",
+  "image_format": "RGB888, HWC, uint8, row-major",
+  "images": [
+    {
+      "image_id": "cifar10_test_01789",
+      "cifar10_test_index": 1789,
+      "class_id": 0,
+      "class_name": "airplane",
+      "raw_bytes": 3072,
+      "sha256": "d2b15d337f2b02123faa8ac6cf1ddaf61206dbbf7f7553f1a1255e5431717e1f",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_01789.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_01789.png"
+    },
+    {
+      "image_id": "cifar10_test_08563",
+      "cifar10_test_index": 8563,
+      "class_id": 0,
+      "class_name": "airplane",
+      "raw_bytes": 3072,
+      "sha256": "8d7d8e464e4e78b4762304467def0312662d0f88c6b19fa160bcddfb54c76073",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_08563.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_08563.png"
+    },
+    {
+      "image_id": "cifar10_test_03745",
+      "cifar10_test_index": 3745,
+      "class_id": 1,
+      "class_name": "automobile",
+      "raw_bytes": 3072,
+      "sha256": "7c6fc84b4d75ff2ec2c021ad5a4de96c97cbcac446146eacb3e034953656f0f9",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_03745.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_03745.png"
+    },
+    {
+      "image_id": "cifar10_test_06493",
+      "cifar10_test_index": 6493,
+      "class_id": 1,
+      "class_name": "automobile",
+      "raw_bytes": 3072,
+      "sha256": "823d475a1ab920b205a628fa87db51a30a61077577851fa615ebab64b6e9c605",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_06493.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_06493.png"
+    },
+    {
+      "image_id": "cifar10_test_00776",
+      "cifar10_test_index": 776,
+      "class_id": 2,
+      "class_name": "bird",
+      "raw_bytes": 3072,
+      "sha256": "2f681b5649fd996d22f273fe71c25a37afa809ece08e9e68ae5599fabda8223b",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_00776.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_00776.png"
+    },
+    {
+      "image_id": "cifar10_test_03534",
+      "cifar10_test_index": 3534,
+      "class_id": 2,
+      "class_name": "bird",
+      "raw_bytes": 3072,
+      "sha256": "c161a6bb9ea719aefc4259d8ee18f4171cb7e1ee59dbacacb55b531d14f03c7b",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_03534.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_03534.png"
+    },
+    {
+      "image_id": "cifar10_test_03607",
+      "cifar10_test_index": 3607,
+      "class_id": 3,
+      "class_name": "cat",
+      "raw_bytes": 3072,
+      "sha256": "4c7e4d868c26ce6a4e2ec47b531ecc09d8eb76bd4102088367adff30417803a3",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_03607.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_03607.png"
+    },
+    {
+      "image_id": "cifar10_test_08241",
+      "cifar10_test_index": 8241,
+      "class_id": 3,
+      "class_name": "cat",
+      "raw_bytes": 3072,
+      "sha256": "782eb453735d1b2359d5d5cd2c19e9d762bce75fa53deb177492efcf71c5c5a8",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_08241.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_08241.png"
+    },
+    {
+      "image_id": "cifar10_test_06822",
+      "cifar10_test_index": 6822,
+      "class_id": 4,
+      "class_name": "deer",
+      "raw_bytes": 3072,
+      "sha256": "bd47d0260c74d9c08d68713e1e88914c3bcc4abdc0bf039cd569591760d7bde2",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_06822.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_06822.png"
+    },
+    {
+      "image_id": "cifar10_test_08944",
+      "cifar10_test_index": 8944,
+      "class_id": 4,
+      "class_name": "deer",
+      "raw_bytes": 3072,
+      "sha256": "5dd7aa0259c86ca3b13b9a864a2acfc7e0007549d7c9b1a8793a60d97dcd8bf3",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_08944.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_08944.png"
+    },
+    {
+      "image_id": "cifar10_test_01922",
+      "cifar10_test_index": 1922,
+      "class_id": 5,
+      "class_name": "dog",
+      "raw_bytes": 3072,
+      "sha256": "fba0c5c759c95e97042c38af416b6c97182772f86a9c5edde09dd262320e4487",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_01922.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_01922.png"
+    },
+    {
+      "image_id": "cifar10_test_08458",
+      "cifar10_test_index": 8458,
+      "class_id": 5,
+      "class_name": "dog",
+      "raw_bytes": 3072,
+      "sha256": "d135f8f0fdafef2b0e3b113412ba935c4c6046e924ec51d1849bb1335d683865",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_08458.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_08458.png"
+    },
+    {
+      "image_id": "cifar10_test_00891",
+      "cifar10_test_index": 891,
+      "class_id": 6,
+      "class_name": "frog",
+      "raw_bytes": 3072,
+      "sha256": "31f5aaa50cffc851d9d1fafe48db67500291fbf8e872262e8103a1cdb735b2c4",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_00891.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_00891.png"
+    },
+    {
+      "image_id": "cifar10_test_02862",
+      "cifar10_test_index": 2862,
+      "class_id": 6,
+      "class_name": "frog",
+      "raw_bytes": 3072,
+      "sha256": "fa4bb9e837c33535c7068f9f4f3a2d1280417dd1b024d43f787eec9f4630b76d",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_02862.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_02862.png"
+    },
+    {
+      "image_id": "cifar10_test_07226",
+      "cifar10_test_index": 7226,
+      "class_id": 7,
+      "class_name": "horse",
+      "raw_bytes": 3072,
+      "sha256": "dac7ddb7583df7bf36be2488736e5255badb46e0352914c646fd3d13b4fec784",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_07226.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_07226.png"
+    },
+    {
+      "image_id": "cifar10_test_09672",
+      "cifar10_test_index": 9672,
+      "class_id": 7,
+      "class_name": "horse",
+      "raw_bytes": 3072,
+      "sha256": "70799531bb807912ec9a5bbe9a80d8f1a2808a4c5c4d184e740f02931949c64c",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_09672.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_09672.png"
+    },
+    {
+      "image_id": "cifar10_test_02604",
+      "cifar10_test_index": 2604,
+      "class_id": 8,
+      "class_name": "ship",
+      "raw_bytes": 3072,
+      "sha256": "b3744714cd883aa4f15705b8aa81aab646acb5b48b5d006d56e024d377689e56",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_02604.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_02604.png"
+    },
+    {
+      "image_id": "cifar10_test_06490",
+      "cifar10_test_index": 6490,
+      "class_id": 8,
+      "class_name": "ship",
+      "raw_bytes": 3072,
+      "sha256": "ab0825c7b6ee05f6d14ea00999a163761965fe383fa3aca83e8fcb65f2b08950",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_06490.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_06490.png"
+    },
+    {
+      "image_id": "cifar10_test_01136",
+      "cifar10_test_index": 1136,
+      "class_id": 9,
+      "class_name": "truck",
+      "raw_bytes": 3072,
+      "sha256": "c504d71dbea2e04822b31488e5223ad2098cf15fc94f25eb1d03ddd3bd96a08b",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_01136.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_01136.png"
+    },
+    {
+      "image_id": "cifar10_test_07639",
+      "cifar10_test_index": 7639,
+      "class_id": 9,
+      "class_name": "truck",
+      "raw_bytes": 3072,
+      "sha256": "eb0d205cd44e40f6f1fb2983d644b07c04178b0ffb41f30857bc7d7f81211944",
+      "raw_path": "data/processed/hardware_test/raw/cifar10_test_07639.rgb",
+      "png_path": "data/processed/hardware_test/png/cifar10_test_07639.png"
+    }
+  ]
+}

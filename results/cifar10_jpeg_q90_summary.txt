@@ -1,0 +1,8 @@
+Images: 20/20 PASS
+JPEG quality: 90
+Average JPEG size: 1245.80 bytes
+Average compression ratio: 2.4839:1
+Average bits per pixel: 9.7328
+Average ESP32 encode time: 2613.90 us
+Average PSNR: 36.3437 dB
+Average SSIM: 0.987201

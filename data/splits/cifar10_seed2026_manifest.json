@@ -1,0 +1,105 @@
+{
+  "dataset": "CIFAR-10 Python version",
+  "seed": 2026,
+  "policy": "Deterministic stratified split by CIFAR-10 class. For each class, 4500 original training images are assigned to train and 500 to validation. Calibration uses 50 train images per class. Validation-bitrate uses 50 validation images per class. Test uses the full official 10000-image CIFAR-10 test batch.",
+  "proposal_requirements": {
+    "train_per_class": 4500,
+    "validation_per_class": 500,
+    "calibration_per_class": 50,
+    "validation_bitrate_per_class": 50,
+    "hardware_test_per_class": 2
+  },
+  "sets": {
+    "train": {
+      "count": 45000,
+      "index_space": "original_train",
+      "indices_sha256_int32_le": "9bce4f5404bed99365b15763533edc77d8df862152127e06858fefc854336cff",
+      "class_counts": {
+        "airplane": 4500,
+        "automobile": 4500,
+        "bird": 4500,
+        "cat": 4500,
+        "deer": 4500,
+        "dog": 4500,
+        "frog": 4500,
+        "horse": 4500,
+        "ship": 4500,
+        "truck": 4500
+      },
+      "csv_manifest": "data/splits/train_manifest.csv"
+    },
+    "validation": {
+      "count": 5000,
+      "index_space": "original_train",
+      "indices_sha256_int32_le": "ad7cf3ae32740b474e61e206c3224227615340cbb8d08098d764a2ee7770d553",
+      "class_counts": {
+        "airplane": 500,
+        "automobile": 500,
+        "bird": 500,
+        "cat": 500,
+        "deer": 500,
+        "dog": 500,
+        "frog": 500,
+        "horse": 500,
+        "ship": 500,
+        "truck": 500
+      },
+      "csv_manifest": "data/splits/validation_manifest.csv"
+    },
+    "calibration": {
+      "count": 500,
+      "index_space": "original_train",
+      "indices_sha256_int32_le": "0e8ed6064f0d6aa9667ce12409c3f83455fdb1b40b0439dd4f63d2fe5eb97d94",
+      "class_counts": {
+        "airplane": 50,
+        "automobile": 50,
+        "bird": 50,
+        "cat": 50,
+        "deer": 50,
+        "dog": 50,
+        "frog": 50,
+        "horse": 50,
+        "ship": 50,
+        "truck": 50
+      },
+      "csv_manifest": "data/splits/calibration_manifest.csv"
+    },
+    "validation_bitrate": {
+      "count": 500,
+      "index_space": "original_train",
+      "indices_sha256_int32_le": "e9e1641514d02fa84c3d0b7d81146c7b8767d627c48b4b2f63cf58f7c4f70d44",
+      "class_counts": {
+        "airplane": 50,
+        "automobile": 50,
+        "bird": 50,
+        "cat": 50,
+        "deer": 50,
+        "dog": 50,
+        "frog": 50,
+        "horse": 50,
+        "ship": 50,
+        "truck": 50
+      },
+      "csv_manifest": "data/splits/validation_bitrate_manifest.csv"
+    },
+    "test": {
+      "count": 10000,
+      "index_space": "original_test",
+      "indices_sha256_int32_le": "9140e019602b8628f6f4a6aac3658bf206e332a92943eb113fb2b465fecc55d6",
+      "class_counts": {
+        "airplane": 1000,
+        "automobile": 1000,
+        "bird": 1000,
+        "cat": 1000,
+        "deer": 1000,
+        "dog": 1000,
+        "frog": 1000,
+        "horse": 1000,
+        "ship": 1000,
+        "truck": 1000
+      },
+      "csv_manifest": "data/splits/test_manifest.csv"
+    }
+  },
+  "indices_file": "data/splits/cifar10_seed2026_indices.npz"
+}

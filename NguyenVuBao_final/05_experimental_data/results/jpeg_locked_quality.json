@@ -1,0 +1,25 @@
+{
+  "selection_set": "validation_bitrate",
+  "selection_images": 500,
+  "selected_quality": 70,
+  "reason": "Q70 has the closest average bitrate to TinyCAE INT8 while preserving comparable reconstruction quality.",
+  "tinycae_reference": {
+    "latent_bytes": 1024,
+    "bits_per_pixel_latent_only": 8.0,
+    "compression_ratio_latent_only": 3.0
+  },
+  "jpeg_validation_bitrate_q70": {
+    "passed": 500,
+    "total": 500,
+    "avg_jpeg_bytes": 960.09,
+    "avg_bits_per_pixel": 7.500703125,
+    "avg_compression_ratio": 3.2143242275508466,
+    "avg_encode_time_us": 2406.272,
+    "avg_psnr_db": 31.31245964629821,
+    "avg_ssim": 0.9564447756629925
+  },
+  "summary_csv": "results/jpeg_validation_bitrate_summary.csv",
+  "locked_before_hardware_test": true,
+  "hardware_test_csv": "results/hardware_test_jpeg_q70.csv",
+  "final_comparison_csv": "results/final_codec_comparison.csv"
+}

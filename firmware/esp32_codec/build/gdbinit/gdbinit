@@ -1,0 +1,2 @@
+source D:/projects/iot-final/firmware/esp32_codec/build/gdbinit/symbols
+source D:/projects/iot-final/firmware/esp32_codec/build/gdbinit/connect

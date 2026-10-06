@@ -1,0 +1,57 @@
+{
+  "model_name": "TinyCAE_Stratified_Baseline",
+  "encoder": {
+    "format": "TFLite INT8",
+    "file": "tinycae_int8/encoder_int8.tflite",
+    "size_bytes": 9560,
+    "sha256": "badfe7f849a7d71ba91b87505ba3fc58442df8982c2eee643a626535862bb8c6",
+    "input_shape": [
+      1,
+      32,
+      32,
+      3
+    ],
+    "output_shape": [
+      1,
+      8,
+      8,
+      16
+    ],
+    "input_type": "int8",
+    "output_type": "int8",
+    "input_scale": 0.003921568859368563,
+    "input_zero_point": -128,
+    "output_scale": 0.004770447965711355,
+    "output_zero_point": -5,
+    "parameters_count": 2800,
+    "macs_count": 337920
+  },
+  "decoder": {
+    "format": "Keras FP32",
+    "file": "decoder/decoder.keras",
+    "size_bytes": 161492,
+    "sha256": "dc4c2aba3a5c8f6d12d2de6fc2bb41b92b0e217dc903d884249efb508530e4f6",
+    "input_shape": [
+      1,
+      8,
+      8,
+      16
+    ],
+    "output_shape": [
+      1,
+      32,
+      32,
+      3
+    ]
+  },
+  "dataset": {
+    "name": "CIFAR-10",
+    "split": "stratified_seed2026",
+    "train_samples": 45000,
+    "val_samples": 5000,
+    "calib_samples": 500,
+    "val_bitrate_samples": 500,
+    "test_samples": 10000,
+    "hardware_test_samples": 20
+  }
+}

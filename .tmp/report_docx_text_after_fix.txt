@@ -1,0 +1,558 @@
+TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT TP. HỒ CHÍ MINHKHOA CÔNG NGHỆ THÔNG TINBỘ MÔN KỸ THUẬT DỮ LIỆU & IOT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BÁO CÁO TIỂU LUẬN CUỐI MÔN HỌC
+TRIỂN KHAI VÀ ĐÁNH GIÁBỘ MÃ HÓA TINYCAE LƯỢNG TỬ HÓA INT8CHO NÉN ẢNH TRÊN ESP32
+Nghiên cứu đối chứng với Bộ mã hóa JPEG phần mềm trên cùng phần cứng nhúng
+Môn học:
+Trí tuệ nhân tạo cho IoT
+Mã lớp học phần:
+261AIOT331185_01CLC
+Giảng viên hướng dẫn:
+Thầy Hồ Nhựt Minh
+Sinh viên thực hiện:
+Nguyễn Vũ Bảo
+Mã số sinh viên (MSSV):
+23110079
+Thời gian thực hiện:
+Tháng 09 / 2026
+THÀNH PHỐ HỒ CHÍ MINH — THÁNG 09/2026
+TÓM TẮT BÁO CÁO & ĐỊNH HƯỚNG KỸ THUẬT
+Báo cáo này trình bày quy trình thiết kế, triển khai thực tế trên phần cứng nhúng ESP32 và đánh giá thực nghiệm toàn diện bộ mã hóa nén ảnh bất đối xứng Tiny Convolutional Autoencoder (TinyCAE) lượng tử hóa INT8, đặt trong sự đối chứng đa diện với bộ mã hóa JPEG phần mềm (esp_new_jpeg) chạy trên chính thiết bị đó. Thí nghiệm được chuẩn hóa trên tập dữ liệu ảnh CIFAR-10 (32 × 32 × 3 pixel, RGB888, 3.072 bytes/ảnh raw) theo quy trình phân chia phân tầng (Stratified Split, seed 2026) đảm bảo tính cân bằng tuyệt đối giữa các lớp đối tượng.
+Hệ thống nén hoạt động theo mô hình bất đối xứng (Asymmetric Compression): bộ mã hóa TinyCAE siêu nhẹ (2.800 tham số, cấu trúc Conv2D kết hợp DepthwiseConv2D) được nạp vào vi điều khiển ESP32 thông qua framework TensorFlow Lite Micro (esp-tflite-micro v1.4.x) và thư viện tăng tốc phần cứng ESP-NN. Encoder nén bức ảnh 3.072 bytes thành không gian tiềm ẩn (latent vector) 8 × 8 × 16 = 1.024 bytes (tương ứng BPP cố định 8,0 bpp, tỷ lệ nén 3,0:1). Phía máy tính chủ (Host PC) đảm nhiệm bộ giải mã Decoder FP32 (32.803 tham số) để tái tạo lại bức ảnh hoàn chỉnh. Đối chứng với TinyCAE là bộ mã hóa JPEG phần mềm chuẩn chạy trên cùng ESP32, được xác định chất lượng Quality Q70 thông qua quy trình quét và khóa bitrate khách quan trên tập 500 ảnh validation.
+📌 CÁC KẾT QUẢ KỸ THUẬT THEN CHỐT ĐÃ ĐẠT ĐƯỢC1. Triển khai phần cứng thành công: Firmware tích hợp hoàn chỉnh TinyCAE INT8 và JPEG trên bo phát triển ESP32-CAM (Xtensa LX6 @ 240MHz, 4MB Flash, 8MB PSRAM với 4MB heap map), giao tiếp UART 115200 baud với cơ chế xác thực toàn vẹn dữ liệu CRC-32.2. Bảo toàn chất lượng lượng tử hóa (PTQ INT8): Đánh giá trên 10.000 ảnh kiểm thử cho thấy TinyCAE INT8 chỉ suy hao 0,26 dB PSNR và 0,0034 SSIM so với mô hình FP32 gốc.3. Dung sai số học phần cứng cực thấp: Sai lệch giữa kernel TFLite Micro/ESP-NN trên ESP32 và TFLite chuẩn trên PC tối đa chỉ 1 LSB trên 20 ảnh hardware test; chất lượng tái tạo thực tế gần như trùng khớp hoàn toàn (ΔPSNR = +0,004 dB, ΔSSIM = +0,00002).4. So sánh thực nghiệm trực tiếp (TinyCAE INT8 vs. JPEG Q70 locked trên 20 ảnh phần cứng):   - Dung lượng: TinyCAE cố định 1024,00 B (8,0000 bpp) | JPEG Q70 biến thiên trung bình 968,55 B (7,5668 bpp, nhỏ hơn 5,4%).   - Chất lượng tái tạo: TinyCAE đạt PSNR 31,3254 ± 1,90 dB và SSIM 0,967408 ± 0,0135; nhỉnh hơn một chút so với JPEG Q70 (PSNR 31,1838 ± 1,55 dB, SSIM 0,964415 ± 0,0148).   - Tốc độ thực thi: JPEG mã hóa cực nhanh 2,432 ms/ảnh, trong khi TinyCAE mất 60,704 ms/ảnh (chậm hơn ~25,0 lần do gánh nặng 338.000 phép tính tích chập).   - Độ an toàn bộ nhớ: Tensor arena TinyCAE 128 KiB và JPEG buffer 8 KiB cấp phát hoàn toàn trên PSRAM, giữ cho bộ nhớ heap nội tự do dồi dào (> 287 KiB free).
+Bảng tổng quan bố cục các chương mục trong báo cáo.
+Chương / Phần
+Nội dung kỹ thuật trọng tâm
+Chương 1. Đặt vấn đề và Mục tiêu nghiên cứu
+Bối cảnh nén ảnh IoT biên, phát biểu bài toán, ba câu hỏi nghiên cứu (RQ1-RQ3), phạm vi.
+Chương 2. Dữ liệu và Phân chia phân tầng
+Tập dữ liệu CIFAR-10, Stratified Split seed 2026, bộ 20 ảnh Hardware Test, chuẩn hóa tensor INT8.
+Chương 3. Phương pháp và Kiến trúc triển khai
+Kiến trúc TinyCAE Encoder 2.800 params, Decoder PC, PTQ INT8, JPEG baseline, giao thức UART có CRC-32.
+Chương 4. Thiết kế thực nghiệm và Cấu hình
+Phần cứng ESP32-CAM (Xtensa LX6, 4MB Flash, 8MB PSRAM), ESP-IDF v5.5.5, ranh giới đo t_core và bộ nhớ.
+Chương 5. Kết quả thực nghiệm và Phân tích
+Suy hao PTQ INT8 trên 10k test, khóa JPEG Q70 trên 500 val, so sánh 20 ảnh hardware, latency, memory.
+Chương 6. Bàn luận, Hạn chế và Hướng mở rộng
+Trade-off kỹ thuật: Bitrate cố định vs. biến thiên, tốc độ tính toán, blocking artifacts, tiềm năng ESP32-S3.
+Chương 7. Kết luận và Bàn giao sản phẩm
+Trả lời dứt khoát RQ1-RQ3, Bảng 10 danh mục sản phẩm đối chiếu đề cương hoàn thành nghiệm thu.
+Tài liệu tham khảo
+14 công trình học thuật chuẩn quốc tế và tài liệu kỹ thuật chính thức của Espressif/Google AI Edge.
+Phụ lục
+Bảng dữ liệu chi tiết ghép cặp từng ảnh trên 20 ảnh Hardware Test với các chỉ số đo đạc gốc.
+Bảng 1. Danh mục thuật ngữ và ký hiệu viết tắt trong báo cáo.
+Thuật ngữ / Ký hiệu
+Giải thích chi tiết
+CAE / TinyCAE
+Convolutional Autoencoder / Mạng nơ-ron tự mã hóa tích chập thu nhỏ cho thiết bị nhúng.
+INT8 / PTQ
+Số nguyên có dấu 8-bit ([-128, 127]) / Post-Training Quantization (Lượng tử hóa sau huấn luyện).
+BPP (Bits Per Pixel)
+Số bít truyền tải trên mỗi điểm ảnh: BPP = (Số bytes bitstream × 8) / (Chiều rộng × Chiều cao).
+CR (Compression Ratio)
+Tỷ lệ nén kích thước dữ liệu: CR = Kích thước ảnh thô ban đầu / Kích thước nén mã hóa.
+PSNR (Peak Signal-to-Noise Ratio)
+Tỷ số tín hiệu cực đại trên nhiễu (đơn vị dB), đo lường mức độ tương đồng cường độ điểm ảnh.
+SSIM (Structural Similarity)
+Độ tương đồng cấu trúc (thang đo [0, 1]), mô phỏng cảm nhận thị giác của mắt người.
+TFLM / ESP-NN
+TensorFlow Lite for Microcontrollers / Thư viện hàm nhân nơ-ron tối ưu phần cứng của Espressif.
+t_core / t_codec
+Thời gian thực thi hàm mã hóa lõi (Invoke / Encode) / Tổng thời gian xử lý toàn bộ bitstream.
+PSRAM / Heap
+Pseudo-static RAM gắn ngoài qua giao tiếp SPI / Vùng nhớ cấp phát động trong vi điều khiển.
+CHƯƠNG 1. ĐẶT VẤN ĐỀ VÀ MỤC TIÊU NGHIÊN CỨU
+1.1. Bối cảnh và Tính cấp thiết
+Trong các hệ thống Internet vạn vật (IoT) thu thập dữ liệu hình ảnh tại biên (Edge Vision Sensors) — chẳng hạn như giám sát nông nghiệp thông minh, bẫy ảnh quan trắc động vật hoang dã, hoặc cảnh báo an ninh năng lượng thấp — băng thông truyền thông không dây (LoRa, ZigBee, NB-IoT, BLE) và năng lượng pin luôn là nút thắt cổ chai lớn nhất. Việc truyền tải nguyên bản một bức ảnh thô không nén (raw image) tiêu tốn năng lượng radio gấp hàng chục đến hàng trăm lần năng lượng tính toán của vi điều khiển. Do đó, việc nén ảnh trực tiếp trên nút cảm biến trước khi truyền là yêu cầu mang tính sống còn.
+Phương pháp truyền thống dựa trên chuẩn nén JPEG (sử dụng biến đổi cô-sin rời rạc DCT) đã thống trị nhiều thập kỷ qua nhờ tốc độ và thuật toán tối ưu. Tuy nhiên, các bước tiến gần đây của Học sâu (Deep Learning) và đặc biệt là TinyML (Machine Learning trên vi điều khiển) đã mở ra một hướng tiếp cận mới: nén ảnh bất đối xứng bằng mạng nơ-ron tự mã hóa tích chập (Convolutional Autoencoders - CAE). Mô hình này đặt bộ mã hóa cực nhẹ (Encoder) trên thiết bị nhúng và chuyển toàn bộ gánh nặng giải mã (Decoder kích thước lớn) lên máy chủ đám mây hoặc máy trạm (Host PC).
+1.2. Phát biểu Bài toán
+Đề tài tiến hành hiện thực hóa và so sánh có đối chứng trực tiếp trên cùng một phần cứng vi điều khiển ESP32 hai pipeline nén ảnh:
+• Pipeline P1 (TinyCAE INT8): Ảnh thô RGB888 32 × 32 × 3 (3.072 bytes) → Chuẩn hóa tensor INT8 → Bộ mã hóa TinyCAE INT8 suy luận trên ESP32 → Trích xuất latent vector 1.024 bytes → Truyền UART về PC → Bộ giải mã Decoder FP32 trên PC tái tạo ảnh 32 × 32 × 3.
+• Pipeline P2 (JPEG phần mềm đối chứng): Ảnh thô RGB888 32 × 32 × 3 (3.072 bytes) → Bộ mã hóa JPEG phần mềm (esp_new_jpeg) thực thi trên ESP32 → Luồng bít JPEG hoàn chỉnh → Truyền UART về PC → Thư viện PIL/Pillow trên PC giải mã tái tạo ảnh.
+Nguyên tắc cốt lõi của nghiên cứu là đánh giá công bằng, đo lường trên cùng ranh giới phần cứng (hardware boundary), sử dụng cùng tập ảnh thử nghiệm và các chỉ số chuẩn mực quốc tế, không thiên vị hay tuyên bố ưu thế cảm tính.
+1.3. Các Câu hỏi Nghiên cứu (Research Questions)
+Đề tài tập trung giải quyết và trả lời ba câu hỏi kỹ thuật cụ thể sau:
+Câu hỏi 1 (RQ1): RQ1 (Khả năng thực thi): Bộ mã hóa tích chập TinyCAE lượng tử hóa INT8 có thể chạy ổn định, chính xác và nằm trong giới hạn bộ nhớ SRAM/PSRAM của chip vi điều khiển ESP32 phổ thông hay không? Sai khác số học giữa kernel tối ưu ESP-NN và kernel chuẩn TFLite PC là bao nhiêu?
+Câu hỏi 2 (RQ2): RQ2 (Suy hao lượng tử hóa): Quá trình lượng tử hóa toàn phần sang số nguyên 8-bit (PTQ INT8) gây ra mức suy hao chất lượng hình ảnh (PSNR, SSIM) là bao nhiêu so với mô hình dấu phẩy động 32-bit (FP32) gốc?
+Câu hỏi 3 (RQ3): RQ3 (Đánh đổi kỹ thuật giữa TinyCAE và JPEG): Khi được khóa ở cùng dải bitrate tương đương (~1 KB/ảnh), TinyCAE INT8 và JPEG phần mềm đánh đổi như thế nào về tỷ lệ nén, chất lượng tái tạo (PSNR/SSIM), thời gian thực thi (latency) và tài nguyên bộ nhớ trên ESP32?
+1.4. Mục tiêu và Phạm vi Nghiên cứu
+Mục tiêu là xây dựng một quy trình thực nghiệm có khả năng tái lập 100% (fully reproducible), có bằng chứng log phần cứng chi tiết, và đưa ra các kết luận kỹ thuật khách quan. Phạm vi thực nghiệm giới hạn trên tập ảnh chuẩn CIFAR-10 kích thước 32 × 32 pixel, kênh truyền dữ liệu USB-UART, và phiên bản cơ sở của TinyCAE chưa áp dụng mã hóa entropy (Huffman hay Arithmetic Coding) sau không gian tiềm ẩn.
+CHƯƠNG 2. DỮ LIỆU VÀ QUY TRÌNH PHÂN CHIA PHÂN TẦNG
+2.1. Tập Dữ liệu Chuẩn CIFAR-10 và Phân chia Phân tầng (Stratified Split)
+Nghiên cứu sử dụng tập dữ liệu học máy chuẩn CIFAR-10 (gồm 60.000 ảnh màu tự nhiên, chia thành 10 lớp cân bằng: airplane, automobile, bird, cat, deer, dog, frog, horse, ship, truck). File gốc cifar-10-python.tar.gz được xác thực mã băm MD5 chuẩn xác trước khi giải nén. Để đảm bảo tính nghiêm ngặt về mặt khoa học, toàn bộ quá trình phân chia tập dữ liệu được thực hiện theo phương pháp lấy mẫu phân tầng (Stratified Split) với hạt giống cố định seed = 2026, loại trừ hoàn toàn rủi ro rò rỉ dữ liệu (data leakage) giữa các tập.
+Bảng 2. Cơ cấu phân chia tập dữ liệu CIFAR-10 trong nghiên cứu.
+Tập dữ liệu
+Số lượng ảnh
+Phân bổ theo lớp
+Mục đích sử dụng chính
+Train Set
+45.000 ảnh
+4.500 ảnh / lớp
+Huấn luyện trọng số mạng TinyCAE FP32.
+Validation Set
+5.000 ảnh
+500 ảnh / lớp
+Kiểm định mô hình, áp dụng Early Stopping khi huấn luyện.
+Calibration Set
+500 ảnh (từ Train)
+50 ảnh / lớp
+Hiệu chuẩn miền giá trị (range calibration) cho PTQ INT8.
+Validation Bitrate
+500 ảnh (từ Val)
+50 ảnh / lớp
+Đo đường cong RD của JPEG để chọn và khóa Quality Q.
+PC Test Set
+10.000 ảnh
+1.000 ảnh / lớp
+Đánh giá hiệu năng tổng thể của FP32 vs. INT8 trên PC.
+Hardware Test Set
+20 ảnh (từ Test)
+Đúng 2 ảnh / lớp
+Nạp vào ESP32 để đo đạc thực nghiệm phần cứng thực tế.
+2.2. Chi tiết Bộ 20 Ảnh Kiểm thử Phần cứng (Hardware Test Set)
+Bộ 20 ảnh hardware test được chọn lọc ngẫu nhiên nhưng đảm bảo phân tầng tuyệt đối: mỗi lớp trong 10 lớp của CIFAR-10 có đúng 2 ảnh đại diện. Mỗi bức ảnh được định danh bằng mã image_id duy nhất, lưu trữ dưới dạng ảnh PNG trực quan và tệp nhị phân thô RGB888 dung lượng đúng 3.072 bytes (32 × 32 × 3), đi kèm mã băm SHA-256 được lập chỉ mục trong manifest.csv để đảm bảo tính toàn vẹn khi gửi qua cổng nối tiếp.
+2.3. Chuẩn hóa Dữ liệu và Định dạng Tensor Lượng tử hóa
+Trên máy tính chủ, dữ liệu ảnh CIFAR-10 thô (uint8) được chuẩn hóa về miền thực x ∈ [0.0, 1.0] phục vụ huấn luyện. Khi triển khai trên ESP32, tensor đầu vào phải tuân thủ nghiêm ngặt công thức lượng tử hóa affine của TensorFlow Lite:    q_int8 = clip(round(x_float / input_scale) + input_zero_point, -128, 127)Với các tham số lượng tử hóa đầu vào được xuất từ model manifest: input_scale = 0.003921568859368563 (tương đương 1/255) và input_zero_point = -128. Phép chuyển đổi này biến mảng byte uint8 thô [0, 255] thành mảng int8 [-128, 127] một cách chính xác tuyệt đối, không sử dụng các phép tính xấp xỉ làm tròn sai lệch.
+CHƯƠNG 3. PHƯƠNG PHÁP VÀ KIẾN TRÚC TRIỂN KHAI
+3.1. Kiến trúc Bộ mã hóa TinyCAE (Encoder)
+Để phù hợp với năng lực tính toán khiêm tốn của vi điều khiển ESP32 (lõi Xtensa LX6 không có đơn vị tính toán tensor chuyên dụng NPU), kiến trúc TinyCAE Encoder được thiết kế tối giản, ứng dụng kỹ thuật tích chập tách biệt chiều sâu (Depthwise Separable Convolution) để giảm mạnh số lượng phép toán nhân-cộng (Multiply-Accumulate - MACs) và dung lượng bộ nhớ trọng số.
+Bảng 3. Chi tiết kiến trúc phân tầng của TinyCAE Encoder.
+Tầng (Layer)
+Loại phép toán
+Cấu hình / Kernel / Stride
+Kích thước đầu ra
+Số tham số
+Input
+Input Tensor
+RGB888 INT8, NHWC layout
+1 × 32 × 32 × 3
+0
+Conv 1
+Conv2D + ReLU
+3 × 3, Stride 2, 32 filters, Same
+1 × 16 × 16 × 32
+896
+DW Conv
+DepthwiseConv2D
+3 × 3, Stride 1, 32 channels, Same
+1 × 16 × 16 × 32
+320
+Conv 2
+Conv2D + ReLU
+1 × 1, Stride 1, 32 filters, Same
+1 × 16 × 16 × 32
+1.056
+Bottleneck
+Conv2D + ReLU
+3 × 3, Stride 2, 16 filters, Same
+1 × 8 × 8 × 16
+528
+Tổng số tham số của Encoder chỉ là 2.800 trọng số, với tổng khối lượng tính toán khoảng 337.920 phép MACs. Kích thước tệp mô hình encoder_int8.tflite sau lượng tử hóa INT8 chỉ chiếm đúng 9.560 bytes (chưa đến 10 KiB), cho phép nhúng trực tiếp vào bộ nhớ flash của ESP32 thông qua mảng hằng số C header.
+3.2. Kiến trúc Bộ giải mã (Decoder trên PC)
+Bộ giải mã chạy trên PC đảm nhận việc phóng to và tái cấu trúc không gian đặc trưng latent vector 8 × 8 × 16 về ảnh RGB888 32 × 32 × 3. Kiến trúc gồm: Conv2D(64, 3 × 3, ReLU) → Tăng mẫu Nearest-Neighbor (×2) → Conv2D(32, 3 × 3, ReLU) → Tăng mẫu Nearest-Neighbor (×2) → Conv2D(16, 3 × 3, ReLU) → Conv2D(3, 3 × 3, Sigmoid). Decoder có tổng cộng 32.803 tham số, hoạt động ở chế độ dấu phẩy động FP32 nhằm tối ưu hóa chất lượng tái tạo hình ảnh sau khi nhận latent từ vi điều khiển.
+3.3. Huấn luyện Mô hình và Lượng tử hóa PTQ INT8
+Mô hình được huấn luyện kết hợp End-to-End trên 45.000 ảnh CIFAR-10 bằng bộ tối ưu hóa Adam (learning rate 10⁻³, batch size 128) trong 100 epoch với hàm mất mát kết hợp Rate-Distortion perceptual loss:    Loss = 0,9 × MSE(x, x̂) + 0,1 × [1 - SSIM(x, x̂)]Việc kết hợp hàm mất mát SSIM trực tiếp trong quá trình tối ưu giúp mạng bảo tồn cấu trúc cạnh và chi tiết tần số cao tốt hơn nhiều so với chỉ dùng MSE thuần túy. Sau khi hoàn tất huấn luyện, Encoder được lượng tử hóa toàn phần (Full Integer PTQ) bằng tập Calibration gồm 500 ảnh phân tầng, sinh ra mô hình `encoder_int8.tflite` với mã băm SHA-256: `badfe7f849a7d71ba91b87505ba3fc58442df8982c2eee643a626535862bb8c6`.
+3.4. Pipeline JPEG Đối chứng và Quy trình Khóa Quality
+Để đảm bảo tính khách quan tối đa, pipeline JPEG đối chứng được xây dựng từ thành phần chính thức của Espressif: thư viện esp_new_jpeg phiên bản 1.0.2. Cấu hình mã hóa sử dụng không gian màu RGB888, tỷ lệ lấy mẫu màu chroma subsampling 4:4:4 (không giảm mẫu sắc độ, giữ độ sắc nét cao nhất cho ảnh nhỏ 32 × 32).
+Theo chuẩn mực thiết kế nghiên cứu đề cương, mức chất lượng Quality (Q) của JPEG không được lựa chọn tùy tiện dựa trên 20 ảnh phần cứng mà phải được xác định và khóa (locked) trước thông qua tập kiểm thử mở rộng 500 ảnh Validation Bitrate. Mục tiêu là tìm mức Q có bitrate gần với mức 1.024 bytes của TinyCAE nhất để tạo ra một cuộc đối đầu ngang tài ngang sức.
+3.5. Giao thức Truyền thông UART và Cơ chế Toàn vẹn CRC-32
+Giao tiếp giữa PC và ESP32 được thực hiện qua cổng nối tiếp USB-UART (chip FT232R) ở tốc độ baud 115200. Một giao thức nhị phân hướng gói nghiêm ngặt được thiết lập:1. Bắt tay (Handshake): PC gửi PING, ESP32 phản hồi PONG.2. Kiểm tra bộ nhớ: Lệnh STATUS trả về thông tin heap nội và PSRAM khả dụng.3. Lệnh mã hóa: PC gửi lệnh TINYCAE hoặc JPEG <quality>, ESP32 phản hồi READY 3072.4. Truyền payload: PC đẩy chính xác 3.072 bytes ảnh thô.5. Phản hồi kết quả: ESP32 trả về độ dài dữ liệu, thời gian thực thi vi giây và mã băm CRC-32 của bitstream để đối chiếu toàn vẹn.
+Hình 1. Nhật ký khởi tạo thành công TinyCAE INT8 và TensorFlow Lite Micro trên console phần cứng ESP32.
+CHƯƠNG 4. THIẾT KẾ THỰC NGHIỆM VÀ CẤU HÌNH HỆ THỐNG
+4.1. Cấu hình Phần cứng và Môi trường Nhúng
+Hệ thống thực nghiệm được triển khai trực tiếp trên phần cứng nhúng vật lý với thông số kỹ thuật được xác nhận trong Bảng 4.
+Bảng 4. Thông số kỹ thuật của nền tảng phần cứng và môi trường phần mềm.
+Thành phần phần cứng / phần mềm
+Thông số xác nhận trong thực nghiệm
+Bo mạch phát triển (Development Board)
+ESP32-CAM (AI-Thinker), module ESP32-S, Silicon Revision v3.1.
+Bộ xử lý trung tâm (CPU)
+Xtensa Dual-Core 32-bit LX6, xung nhịp hoạt động 240 MHz.
+Bộ nhớ Flash ngoài
+4 MB SPI Flash (cấu hình DIO 40 MHz).
+Bộ nhớ RAM ngoài (PSRAM)
+8 MB vật lý, cấu hình SPIRAM 40 MHz, 4 MB được ánh xạ vào heap hệ thống.
+Giao tiếp máy tính (Host Interface)
+USB-to-UART FT232R, cổng COM5, tốc độ baud 115200.
+Khung phát triển phần mềm nhúng
+Espressif ESP-IDF v5.5.5 Stable, công cụ GCC Xtensa 14.2.0.
+Thư viện nhúng tích hợp
+esp-tflite-micro v1.4.x (tối ưu ESP-NN) và esp_new_jpeg v1.0.2.
+4.2. Ranh giới Đo lường và Chỉ số Đánh giá
+Để đảm bảo tính nhất quán, các ranh giới đo lường (measurement boundaries) được định nghĩa chặt chẽ:
+Thời gian thực thi: Thời gian mã hóa lõi (t_core): Được bấm giờ trực tiếp trên chip ESP32 bằng hàm vi giây esp_timer_get_time() với độ phân giải cao. Đối với TinyCAE, t_core là thời gian thực thi hàm interpreter->Invoke(). Đối với JPEG, t_core là thời gian thực thi hàm jpeg_enc_process(). Thời gian truyền thông qua UART được tách biệt hoàn toàn khỏi t_core.
+Tài nguyên bộ nhớ: Bộ nhớ sử dụng: Theo dõi biến động Heap nội (Internal SRAM) và PSRAM thông qua hàm esp_mem_get_info() trước và sau khi cấp phát Tensor Arena và JPEG Output Buffer.
+Tốc độ bít và tỷ lệ nén: Chỉ số nén (Rate): Số byte thực tế (B_codec), Tốc độ bít (Bits Per Pixel - BPP = B_codec × 8 / 1024), và Tỷ lệ nén (CR = 3072 / B_codec).
+Chất lượng tái tạo: Chất lượng hình ảnh (Distortion): Được tính toán trên máy tính chủ sau khi tái tạo ảnh, sử dụng thư viện chuẩn scikit-image: PSNR (Peak Signal-to-Noise Ratio) tính trên miền [0.0, 1.0], và SSIM (Structural Similarity Index) với win_size = 7, channel_axis = -1.
+CHƯƠNG 5. KẾT QUẢ THỰC NGHIỆM VÀ PHÂN TÍCH ĐÁNH ĐỔI
+5.1. Suy hao Lượng tử hóa PTQ INT8 trên Tập 10.000 Ảnh Test
+Trước khi nạp mô hình xuống phần cứng, hiệu năng nén của TinyCAE được đánh giá trên toàn bộ 10.000 ảnh của tập PC Test Set nhằm kiểm chứng mức độ suy thoái tín hiệu do lượng tử hóa số nguyên 8-bit gây ra.
+Bảng 5. Đánh giá suy hao lượng tử hóa PTQ INT8 trên 10.000 ảnh kiểm thử PC.
+Cấu hình mô hình
+PSNR trung bình (dB)
+SSIM trung bình
+Dung lượng Latent
+TinyCAE FP32 Baseline (Mô hình gốc)
+31,8454 dB
+0,963669
+4.096 bytes (float32)
+TinyCAE INT8 Quantized (Mô hình lượng tử)
+31,5831 dB
+0,960281
+1.024 bytes (int8)
+Chênh lệch suy hao (INT8 - FP32)
+-0,2623 dB
+-0,003388
+-3.072 bytes (-75,0%)
+Kết quả khẳng định quá trình PTQ INT8 đạt chất lượng xuất sắc: việc lượng tử hóa giúp cắt giảm 75% dung lượng latent (từ 4.096 bytes xuống 1.024 bytes) trong khi chỉ làm suy giảm một lượng không đáng kể: -0,26 dB PSNR và -0,0034 SSIM. Mô hình hoàn toàn sẵn sàng cho việc triển khai nhúng.
+5.2. Kết quả Quét và Khóa Chất lượng JPEG trên 500 Ảnh Validation Bitrate
+Tiến hành quét 4 mức chất lượng JPEG tiêu chuẩn (Q30, Q50, Q70, Q90) trên tập 500 ảnh Validation Bitrate (50 ảnh/lớp). Kết quả đo đạc thống kê đầy đủ được tổng hợp trong Bảng 6.
+Bảng 6. Thống kê hiệu năng JPEG theo 4 mức Quality trên 500 ảnh Validation Bitrate.
+Mức Quality
+Kích thước TB (B)
+BPP trung bình
+Tỷ lệ nén (CR)
+PSNR TB (dB)
+SSIM TB
+Thời gian TB (ms)
+JPEG Q30
+805,43 B
+6,2924 bpp
+3,82:1
+27,6138 dB
+0,908786
+2,271 ms
+JPEG Q50
+872,19 B
+6,8140 bpp
+3,53:1
+29,3744 dB
+0,935867
+2,323 ms
+JPEG Q70 (Khóa)
+960,09 B
+7,5007 bpp
+3,21:1
+31,3125 dB
+0,956445
+2,406 ms
+JPEG Q90
+1.238,60 B
+9,6766 bpp
+2,50:1
+36,2813 dB
+0,983670
+2,629 ms
+Quyết định khóa chất lượng (Locked Quality Decision): Mức JPEG Q70 đạt kích thước trung bình 960,09 bytes (BPP = 7,50), là điểm bitrate tiệm cận nhất với mức dung lượng cố định 1.024 bytes (BPP = 8,00) của TinyCAE INT8. Đồng thời, Q70 đạt ngưỡng PSNR > 31 dB và SSIM > 0,95, tạo nên điều kiện đối đầu công bằng và cân bằng nhất. Cấu hình Q70 được chính thức khóa để thực hiện toàn bộ các phép đo trên phần cứng 20 ảnh tiếp theo.
+5.3. Kiểm định Dung sai Số học Phần cứng: Golden Vector PC vs. ESP32
+Một vấn đề kỹ thuật quan trọng trong TinyML là tính đồng nhất giữa mô hình tham chiếu trên PC (TFLite Interpreter chuẩn) và mô hình chạy trên vi điều khiển (TFLite Micro kết hợp thư viện tối ưu phần cứng ESP-NN). Kết quả kiểm thử trên 20 ảnh Hardware Test cho thấy:• 100% 20/20 ảnh đều vượt qua kiểm tra dung sai (PASS_TOLERANCE).• Độ lệch giá trị số nguyên giữa các phần tử latent tối đa chỉ là 1 LSB (Least Significant Bit), xuất hiện trên một số ít byte do cơ chế làm tròn fixed-point số học khác nhau giữa tập lệnh x86 PC và Xtensa DSP ESP32.• Tác động lên ảnh tái tạo cực kỳ nhỏ: PSNR trung bình của ESP32 đạt 31,3254 dB so với Golden PC là 31,3213 dB (chênh lệch chỉ +0,004 dB); SSIM trung bình đạt 0,967408 so với 0,967381 (chênh lệch chỉ +0,00002). Điều này chứng minh quá trình thực thi trên ESP32 đạt độ chính xác gần như hoàn hảo.
+5.4. So sánh Tổng hợp Trực tiếp: TinyCAE INT8 vs. JPEG Q70 trên ESP32
+Bảng 7 và các hình đồ thị biểu diễn kết quả so sánh tổng hợp trực tiếp giữa hai bộ mã hóa trên cùng 20 ảnh kiểm thử phần cứng.
+Bảng 7. So sánh tổng hợp hiệu năng giữa TinyCAE INT8 và JPEG Q70 trên 20 ảnh phần cứng ESP32.
+Bộ mã hóa (Codec)
+Kích thước (B)
+BPP
+Tỷ lệ nén
+PSNR TB (dB)
+SSIM TB
+Thời gian TB
+Thời gian P95
+TinyCAE INT8
+1.024,00 B
+8,0000
+3,0000:1
+31,3254 ± 1,90
+0,967408 ± 0,013
+60,704 ms
+60,712 ms
+JPEG Q70 Locked
+968,55 B
+7,5668
+3,1838:1
+31,1838 ± 1,55
+0,964415 ± 0,015
+2,432 ms
+2,534 ms
+Hình 2. Đồ thị đánh đổi Tốc độ bít - Chất lượng (BPP vs. PSNR) giữa TinyCAE INT8 và JPEG.
+Hình 3. Đồ thị đánh đổi Tốc độ bít - Độ tương đồng cấu trúc (BPP vs. SSIM) giữa TinyCAE INT8 và JPEG.
+5.5. Phân tích Chi tiết Ghép cặp Từng Ảnh (Pairwise Analysis)
+Khi đối chiếu chi tiết từng cặp ảnh (xem Bảng chi tiết tại Phụ lục và Hình 4, Hình 5):• Về chất lượng PSNR: TinyCAE INT8 giành ưu thế trên 11/20 bức ảnh (55%), đặc biệt vượt trội trên các bức ảnh có vùng nền đồng nhất hoặc chuyển màu mượt mà như máy bay (#01789: +1,74 dB), hươu (#06822: +1,24 dB), và mèo (#03607: +1,63 dB). Ngược lại, JPEG Q70 chiếm ưu thế ở các bức ảnh có nhiều kết cấu sợi phức tạp như chó (#01922: TinyCAE thấp hơn -1,44 dB).• Về độ tương đồng cấu trúc SSIM: TinyCAE INT8 đạt điểm cao hơn trên 12/20 bức ảnh (60%), duy trì mức SSIM trung bình ấn tượng 0,9674. Mô hình học sâu chứng minh khả năng bảo tồn đường biên hình học và khử hiện tượng phân mảnh khối rất hiệu quả.
+Hình 4. Phân bố mức chênh lệch chất lượng ghép cặp (ΔPSNR và ΔSSIM) trên 20 ảnh kiểm thử phần cứng.
+5.6. Đánh giá Thời gian Thực thi (Latency) và Tiêu thụ Bộ nhớ
+Thời gian mã hóa là điểm phân hóa rõ rệt nhất giữa hai phương pháp (xem Hình 5):• JPEG Q70 đạt tốc độ mã hóa cực nhanh: trung bình chỉ 2,432 ms/ảnh (2.431,75 µs), biến động cực nhỏ (P95 đạt 2,534 ms). Thuật toán DCT kết hợp bảng lượng tử hóa cố định cho phép thực thi chớp nhoáng trên CPU 240 MHz.• TinyCAE INT8 mất trung bình 60,704 ms/ảnh (60.704,4 µs), chậm hơn khoảng 25,0 lần so với JPEG Q70. Nguyên nhân là do mô hình phải thực hiện tuần tự gần 338.000 phép toán nhân-cộng ma trận tích chập qua 4 tầng nơ-ron.
+Hình 5. Biểu đồ so sánh thời gian thực thi mã hóa lõi (t_core) trên chip ESP32.
+Bảng 8. Tiêu thụ bộ nhớ của hệ thống trên ESP32 trong quá trình thực nghiệm.
+Vùng nhớ hệ thống
+Dung lượng ghi nhận
+Ghi chú phân bổ kỹ thuật
+Tensor Arena (TinyCAE)
+131.072 bytes (128 KiB)
+Cấp phát tĩnh trên PSRAM, chứa activation tensors của TFLM.
+JPEG Output Buffer
+8.192 bytes (8 KiB)
+Cấp phát động trên PSRAM, chứa luồng byte JPEG nén.
+Internal SRAM Free
+287.155 bytes (~280 KiB)
+Bộ nhớ heap nội chip còn trống sau khi khởi tạo cả 2 codec.
+Internal SRAM Minimum
+254.452 bytes (~248 KiB)
+Mức heap nội thấp nhất (watermark) trong suốt quá trình chạy.
+Internal Largest Block
+155.648 bytes (~152 KiB)
+Khối RAM nội liên tục lớn nhất, chứng minh không bị phân mảnh.
+PSRAM Free Heap
+4.050.484 bytes (~3,86 MiB)
+Bộ nhớ PSRAM còn trống cực kỳ dồi dào, an toàn tuyệt đối.
+5.7. Minh chứng Trực quan Hình ảnh Tái tạo
+Hình 6 trình bày ma trận so sánh trực quan giữa ảnh gốc nguyên bản, ảnh tái tạo từ TinyCAE INT8 (1024 B) và ảnh tái tạo từ JPEG Q70 cho 4 lớp đối tượng đại diện: Máy bay (Airplane), Mèo (Cat), Hươu (Deer), và Chó (Dog).
+Hình 6. Ma trận đối chiếu trực quan: Ảnh gốc RGB888, TinyCAE INT8 (1024 B) và JPEG Q70 trên các lớp CIFAR-10 đại diện.
+CHƯƠNG 6. BÀN LUẬN, HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN
+6.1. Bàn luận Sâu về Trade-off Kỹ thuật (Engineering Trade-offs)
+Kết quả thực nghiệm đem lại một bức tranh đánh đổi kỹ thuật rất rõ ràng, thực tế và có giá trị tham khảo cao:
+Tính xác định của kích thước: Về kích thước gói dữ liệu: TinyCAE có ưu thế độc nhất là tạo ra kích thước latent cố định tuyệt đối (deterministic size) — đúng 1.024 bytes cho mọi ảnh bất kể mức độ phức tạp của hoạt cảnh. Điều này cực kỳ thuận lợi cho việc phân mảnh gói tin truyền thông (MTU packaging) trong các giao thức mạng không dây băng hẹp (như LoRaWAN, BLE, IEEE 802.15.4), tránh được hiện tượng tràn bộ đệm hoặc biến động kích thước gói bất ngờ. Ngược lại, JPEG có kích thước co giãn theo entropy của ảnh (trong tập đo dao động từ 822 bytes đến 1.081 bytes).
+Cơ chế méo hình học: Về đặc trưng thị giác tái tạo: JPEG thường xuyên xuất hiện hiện tượng 'méo dạng khối' (blocking artifacts) đặc trưng do chia lưới 8 × 8 của phép biến đổi DCT, dễ nhận thấy ở các vùng ranh giới có độ tương phản cao. Trong khi đó, TinyCAE học được biểu diễn liên tục nên ảnh tái tạo có bề mặt mượt mà, khử nhiễu tự nhiên và duy trì độ tương đồng cấu trúc SSIM rất cao.
+Chi phí năng lượng tính toán: Về chi phí điện toán và năng lượng: JPEG thể hiện sự áp đảo tuyệt đối về tốc độ với thời gian mã hóa chỉ 2,43 ms, nhanh hơn TinyCAE 25 lần (60,70 ms). Trong các ứng dụng IoT chạy pin yêu cầu tốc độ khung hình cao hoặc cần vi điều khiển ngủ sâu (deep sleep) ngay lập tức để tiết kiệm năng lượng, JPEG vẫn là lựa chọn thực dụng vượt trội. TinyCAE đòi hỏi chip phải chạy ở công suất đỉnh trong 60 ms, dẫn đến tiêu hao năng lượng tính toán cao hơn.
+6.2. Hạn chế của Nghiên cứu Hiện tại
+Tác giả thẳng thắn thừa nhận các giới hạn kỹ thuật trong khuôn khổ đề tài:1. Kích thước hình ảnh: Thí nghiệm thực hiện trên ảnh 32 × 32 pixel của tập CIFAR-10. Khi mở rộng lên các độ phân giải lớn hơn (QVGA 320 × 240, VGA 640 × 480), khối lượng tính toán của TinyCAE sẽ tăng theo cấp số nhân, đòi hỏi các cấu hình mạng có bước nhảy (stride) lớn hơn hoặc vi điều khiển có bộ gia tốc vector.2. Chưa tích hợp nén Entropy cho TinyCAE: Trong nghiên cứu này, latent vector được truyền nguyên bản dưới dạng mảng 1.024 số nguyên INT8. Nếu áp dụng thêm thuật toán nén entropy không mất mát (như Deflate/zlib hoặc Huffman) phía sau latent, kích thước bitstream TinyCAE có thể giảm thêm từ 20% đến 40% mà không làm giảm thêm bất kỳ độ nét nào.3. Kích thước mẫu đo phần cứng: Bộ 20 ảnh kiểm thử phần cứng là minh chứng thực nghiệm xác thực hệ thống, chưa đủ lớn để đại diện cho mọi tình huống môi trường phức tạp ngoài thực địa.
+6.3. Khả năng Ứng dụng Thực tế và Hướng Phát triển
+Hệ thống TinyCAE INT8 đặc biệt phù hợp trong các kịch bản IoT sau:• Hệ thống cảm biến giám sát biên có băng thông truyền dẫn cực hẹp và cố định, nơi việc ổn định kích thước gói tin là ưu tiên số một.• Hệ thống thị giác máy tính phía máy chủ: Thay vì giải mã ra ảnh để người xem, latent vector 1.024 bytes của TinyCAE có thể được đưa trực tiếp vào các mạng nơ-ron phân loại (Classifier) hoặc phát hiện đối tượng (Detector) trên server mà không cần qua bước giải mã ngược, tiết kiệm tài nguyên máy chủ.• Hướng nâng cấp phần cứng: Chuyển đổi mã nguồn sang chip ESP32-S3 (lõi Xtensa LX7 hỗ trợ tập lệnh vector AI SIMD instructions), giúp tăng tốc độ suy luận của TinyCAE lên từ 3 đến 5 lần.
+CHƯƠNG 7. KẾT LUẬN VÀ KIẾN NGHỊ
+7.1. Kết luận Chung về các Câu hỏi Nghiên cứu
+Đề tài đã hoàn thành xuất sắc toàn bộ mục tiêu đặt ra, cung cấp câu trả lời rõ ràng và chuẩn xác cho ba câu hỏi nghiên cứu:
+Kết luận RQ1: Trả lời RQ1: Bộ mã hóa TinyCAE INT8 hoàn toàn khả thi và chạy ổn định tuyệt đối trên chip ESP32 thông qua framework TFLM và ESP-NN. Sai lệch số học giữa ESP32 và PC chỉ tối đa 1 LSB, không gây ảnh hưởng đến chất lượng ảnh.
+Kết luận RQ2: Trả lời RQ2: Quá trình PTQ INT8 bảo tồn chất lượng hình ảnh gần như nguyên vẹn, chỉ suy hao 0,26 dB PSNR và 0,0034 SSIM trên 10.000 ảnh kiểm thử, trong khi tiết kiệm 75% kích thước latent.
+Kết luận RQ3: Trả lời RQ3: Tại dải bitrate tương đương (~1 KB/ảnh), TinyCAE INT8 đạt chất lượng tái tạo nhỉnh hơn một chút so với JPEG Q70 (PSNR 31,33 dB vs 31,18 dB; SSIM 0,9674 vs 0,9644) và có kích thước cố định, nhưng phải trả giá bằng thời gian mã hóa chậm hơn 25 lần (60,70 ms so với 2,43 ms).
+7.2. Danh mục Sản phẩm Bàn giao và Nghiệm thu
+Bảng 9. Đối chiếu danh mục sản phẩm bàn giao thực tế theo Đề cương Bảng 10.
+Sản phẩm bàn giao
+Thư mục lưu trữ trong gói nộp
+Tình trạng nghiệm thu thực tế
+1. Báo cáo & Tài liệu
+01_report_slide/
+ĐẠT CHUẨN. Báo cáo DOCX hoàn chỉnh, nhật ký triển khai và kế hoạch chi tiết.
+2. Mã nguồn Huấn luyện
+02_training_source/
+ĐẠT CHUẨN. Script phân chia stratified, train FP32, quantize PTQ INT8, notebook 01-05.
+3. Mã nguồn Firmware ESP32
+03_esp32_source/
+ĐẠT CHUẨN. Mã nguồn C/C++, SDKConfig, CMakeLists, tích hợp TFLM và esp_new_jpeg.
+4. Mã nguồn Host PC Client
+04_pc_source/
+ĐẠT CHUẨN. Script giao tiếp UART COM5, kiểm tra CRC, benchmark JPEG và build so sánh.
+5. Mô hình & Manifest
+05_models_manifest/
+ĐẠT CHUẨN. Model TFLite INT8, mô hình Keras decoder, SHA-256 manifest JSON.
+6. Dữ liệu Thực nghiệm
+06_experimental_data/
+ĐẠT CHUẨN. Toàn bộ tệp bitstream thực, ảnh tái tạo, CSV chi tiết theo từng ảnh.
+7. Bằng chứng Phần cứng
+07_hardware_evidence/
+ĐẠT CHUẨN. Ảnh chụp màn hình console monitor khởi tạo ESP32 thực tế.
+TÀI LIỆU THAM KHẢO
+[1] A. G. Howard et al., “MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications,” arXiv:1704.04861, 2017.
+[2] B. Jacob et al., “Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference,” IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 2704–2713, 2018. DOI: 10.1109/CVPR.2018.00286.
+[3] R. David et al., “TensorFlow Lite Micro: Embedded Machine Learning for TinyML Systems,” Proceedings of Machine Learning and Systems (MLSys), vol. 3, pp. 800–811, 2021.
+[4] G. K. Wallace, “The JPEG Still Picture Compression Standard,” IEEE Transactions on Consumer Electronics, vol. 38, no. 1, pp. xviii–xxxiv, 1992. DOI: 10.1109/30.125072.
+[5] Z. Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, “Image Quality Assessment: From Error Visibility to Structural Similarity,” IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600–612, 2004. DOI: 10.1109/TIP.2003.819861.
+[6] A. Krizhevsky, “Learning Multiple Layers of Features from Tiny Images,” Technical Report, University of Toronto, 2009.
+[7] J. Ballé, V. Laparra and E. P. Simoncelli, “End-to-end Optimized Image Compression,” International Conference on Learning Representations (ICLR), 2017.
+[8] Google AI Edge, “LiteRT 8-bit Quantization Specification,” Google Developers Documentation, 2024.
+[9] Espressif Systems, “TensorFlow Lite Micro for Espressif Chipsets (esp-tflite-micro),” Espressif Component Registry, v1.4.x, 2024.
+[10] Google AI Edge, “Post-training Integer Quantization Guide,” TensorFlow Core Documentation, 2024.
+[11] Espressif Systems, “ESP_NEW_JPEG: High Performance JPEG Codec Component,” Espressif Component Registry, v1.0.2, 2024.
+[12] scikit-image developers, “skimage.metrics: Peak Signal-to-Noise Ratio and Structural Similarity Index,” API Reference Manual, 2024.
+[13] Espressif Systems, “ESP Timer (High Resolution Timer),” ESP-IDF Programming Guide, Espressif Systems, 2024.
+[14] Espressif Systems, “Heap Memory Debugging and Allocation API,” ESP-IDF Programming Guide, Espressif Systems, 2024.
+PHỤ LỤC. BẢNG SỐ LIỆU ĐỐI CHỨNG GHÉP CẶP CHI TIẾT TRÊN 20 ẢNH
+Bảng Phụ lục 1 ghi nhận toàn bộ số liệu thực nghiệm gốc trên từng bức ảnh trong bộ 20 ảnh kiểm thử phần cứng, đối chứng trực tiếp giữa bộ mã hóa TinyCAE INT8 và JPEG Q70 locked được xử lý trên chip ESP32.
+Bảng Phụ lục 1. Số liệu chi tiết ghép cặp từng ảnh trên phần cứng ESP32.
+Mã ảnh (ID)
+Lớp
+TinyCAE (B)
+JPEG Q70 (B)
+TinyCAE PSNR
+JPEG PSNR
+Δ PSNR (dB)
+TinyCAE SSIM
+JPEG SSIM
+#00776
+bird
+1024
+987
+31.13
+31.38
+-0.25
+0.9754
+0.9708
+#00891
+frog
+1024
+1081
+27.73
+28.13
+-0.40
+0.9380
+0.9414
+#01136
+truck
+1024
+1000
+31.72
+31.16
++0.56
+0.9740
+0.9779
+#01789
+airplane
+1024
+932
+34.23
+32.49
++1.74
+0.9815
+0.9730
+#01922
+dog
+1024
+1009
+30.64
+32.09
+-1.44
+0.9885
+0.9871
+#02604
+ship
+1024
+920
+32.47
+31.71
++0.75
+0.9766
+0.9632
+#02862
+frog
+1024
+1006
+29.09
+28.73
++0.37
+0.9304
+0.9310
+#03534
+bird
+1024
+822
+35.98
+35.47
++0.51
+0.9791
+0.9739
+#03607
+cat
+1024
+932
+32.60
+30.97
++1.63
+0.9532
+0.9401
+#03745
+automobile
+1024
+1009
+29.98
+30.25
+-0.26
+0.9767
+0.9831
+#06490
+ship
+1024
+942
+31.45
+31.78
+-0.33
+0.9718
+0.9711
+#06493
+automobile
+1024
+968
+31.94
+31.89
++0.05
+0.9687
+0.9619
+#06822
+deer
+1024
+926
+32.95
+31.72
++1.24
+0.9711
+0.9602
+#07226
+horse
+1024
+981
+30.10
+30.42
+-0.33
+0.9710
+0.9733
+#07639
+truck
+1024
+1030
+29.66
+30.15
+-0.50
+0.9575
+0.9586
+#08241
+cat
+1024
+900
+32.92
+32.49
++0.43
+0.9674
+0.9517
+#08458
+dog
+1024
+1026
+29.21
+30.11
+-0.91
+0.9653
+0.9748
+#08563
+airplane
+1024
+944
+32.35
+31.19
++1.16
+0.9640
+0.9574
+#08944
+deer
+1024
+912
+30.74
+32.32
+-1.58
+0.9704
+0.9827
+#09672
+horse
+1024
+1044
+29.61
+29.23
++0.37
+0.9677
+0.9552

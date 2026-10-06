@@ -1,0 +1,9 @@
+Split: hardware_test
+Images: 20/20 PASS
+JPEG quality: 70
+Average JPEG size: 968.55 bytes
+Average compression ratio: 3.1838:1
+Average bits per pixel: 7.5668
+Average ESP32 encode time: 2431.75 us
+Average PSNR: 31.1838 dB
+Average SSIM: 0.964415

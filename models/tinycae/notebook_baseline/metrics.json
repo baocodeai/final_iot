@@ -1,0 +1,13 @@
+{
+  "run_name": "notebook_baseline",
+  "quick_run": false,
+  "train_images": 45000,
+  "validation_images": 5000,
+  "psnr_db": 31.633981704711914,
+  "ssim": 0.9652977585792542,
+  "latent_shape": [
+    8,
+    8,
+    16
+  ]
+}

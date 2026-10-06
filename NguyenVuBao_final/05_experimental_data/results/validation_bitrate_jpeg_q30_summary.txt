@@ -1,0 +1,9 @@
+Split: validation_bitrate
+Images: 500/500 PASS
+JPEG quality: 30
+Average JPEG size: 805.43 bytes
+Average compression ratio: 3.8214:1
+Average bits per pixel: 6.2924
+Average ESP32 encode time: 2271.35 us
+Average PSNR: 27.6138 dB
+Average SSIM: 0.908786

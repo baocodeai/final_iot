@@ -1,0 +1,15 @@
+{
+  "validation_images": 5000,
+  "mse": 0.000757509027607739,
+  "psnr_db": 31.8469181060791,
+  "ssim": 0.9637640714645386,
+  "training_seconds": 2624.4857475999997,
+  "epochs_completed": 100,
+  "encoder_parameters": 2800,
+  "decoder_parameters": 32803,
+  "latent_shape": [
+    8,
+    8,
+    16
+  ]
+}

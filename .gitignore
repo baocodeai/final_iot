@@ -1,0 +1,15 @@
+.venv/
+.tmp/
+__pycache__/
+*.pyc
+
+firmware/**/build/
+firmware/**/managed_components/
+firmware/**/dependencies.lock
+
+*.log
+.DS_Store
+Thumbs.db
+
+data/raw/
+NguyenVuBao_final/*.mp4

@@ -1,0 +1,14 @@
+{
+  "model_sha256": "badfe7f849a7d71ba91b87505ba3fc58442df8982c2eee643a626535862bb8c6",
+  "images": 20,
+  "passed": 20,
+  "input_scale": 0.003921568859368563,
+  "input_zero_point": -128,
+  "output_scale": 0.004770447965711355,
+  "output_zero_point": -5,
+  "latent_bytes_per_image": 1024,
+  "bits_per_pixel": 8.0,
+  "compression_ratio": 3.0,
+  "mean_psnr_db": 31.321334743499754,
+  "mean_ssim": 0.9673812866210938
+}

@@ -1,0 +1,69 @@
+Command: C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe C:\esp\v5.5.5\esp-idf\tools/idf_monitor.py -p COM5 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 D:\projects\iot-final\firmware\esp32_codec\build\esp32_codec.elf D:\projects\iot-final\firmware\esp32_codec\build\bootloader\bootloader.elf --force-color -m 'C:\Espressif\tools\python\v5.5.5\venv\Scripts\python.exe' 'C:\esp\v5.5.5\esp-idf\tools\idf.py' '-p' 'COM5'
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+[0;32mI (29) boot: ESP-IDF v5.5.5 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Sep 28 2026 14:04:01[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 4MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=15288h ( 86664) map[0m
+[0;32mI (118) esp_image: segment 1: paddr=000252b0 vaddr=3ffb0000 size=02ac8h ( 10952) load[0m
+[0;32mI (122) esp_image: segment 2: paddr=00027d80 vaddr=40080000 size=08298h ( 33432) load[0m
+[0;32mI (135) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=34394h (213908) map[0m
+[0;32mI (209) esp_image: segment 4: paddr=000643bc vaddr=40088298 size=09a40h ( 39488) load[0m
+[0;32mI (225) esp_image: segment 5: paddr=0006de04 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (233) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (234) boot: Disabling RNG early entropy source...[0m
+[0;32mI (245) quad_psram: This chip is ESP32-D0WD[0m
+[0;32mI (246) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (247) esp_psram: Speed: 40MHz[0m
+[0;32mI (247) esp_psram: PSRAM initialized, cache is in low/high (2-core) mode.[0m
+[0;33mW (252) esp_psram: Virtual address not enough for PSRAM, map as much as we can. 4MB is mapped[0m
+[0;32mI (260) cpu_start: Multicore app[0m
+[0;32mI (1169) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (1177) cpu_start: GPIO 3 and 1 are used as console UART I/O pins[0m
+[0;32mI (1177) cpu_start: Pro cpu start user code[0m
+[0;32mI (1177) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (1179) app_init: Application information:[0m
+[0;32mI (1183) app_init: Project name:     esp32_codec[0m
+[0;32mI (1187) app_init: App version:      1[0m
+[0;32mI (1191) app_init: Compile time:     Sep 28 2026 14:03:49[0m
+[0;32mI (1196) app_init: ELF file SHA256:  bdfc4c1f5...[0m
+[0;32mI (1200) app_init: ESP-IDF:          v5.5.5[0m
+[0;32mI (1204) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (1208) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (1212) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (1217) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (1223) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (1228) heap_init: At 3FFB4668 len 0002B998 (174 KiB): DRAM[0m
+[0;32mI (1233) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (1238) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (1244) heap_init: At 40091CD8 len 0000E328 (56 KiB): IRAM[0m
+[0;32mI (1250) esp_psram: Adding pool of 4096K of PSRAM memory to heap allocator[0m
+[0;33mW (1257) spi_flash: Detected boya flash chip but using generic driver. For optimal functionality, enable `SPI_FLASH_SUPPORT_BOYA_CHIP` in menuconfig[0m
+[0;32mI (1269) spi_flash: detected chip: generic[0m
+[0;32mI (1273) spi_flash: flash io: dio[0m
+[0;32mI (1277) main_task: Started on CPU0[0m
+[0;32mI (1277) esp_psI (1287) esp32_codec: PSRAM initialized: 8388608 bytes[0m
+[0;32mI (1287) esp32_codec: UART PING-PONG ready at 115200 baud[0m
+[0;32mI (1287) esp32_codec: JPEG encoder ready: RGB888 32x32, 4:4:4, output buffer 8192 bytes[0m
+[0;32mI (1297) tinycae: TinyCAE ready: model=9560 bytes arena=131072 bytes input=(scale 0.0039215689 zp -128) output=(scale 0.0047704480 zp -5)[0m
+READY
